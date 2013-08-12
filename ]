@@ -1,5 +1,0 @@
-(ns euler.p061)
-
-(def triangles (take-while #(< % 10000) (drop-while #(> % 1000) (map #(* % (inc %) 1/2) (rest (range))))))
-
-triangles
