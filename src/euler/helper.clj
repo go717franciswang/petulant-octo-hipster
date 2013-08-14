@@ -24,3 +24,14 @@
               (x-multiples x n))
             (+ 2 x)))
         (recur sieve (+ 2 x)))))))
+
+(defn farey [n]
+  "useful to generate coprimes"
+  "http://en.wikipedia.org/wiki/Farey_sequence#Next_term"
+  (loop [r [[0 1] [1 n]]]
+    (let [last-pos (count r)
+          [[a b] [c d]] (subvec r (- last-pos 2) last-pos)]
+      (if (> c n)
+        (pop r)
+        (let [k (int (/ (+ n b) d))]
+          (recur (conj r [(- (* k c) a) (- (* k d) b)])))))))
