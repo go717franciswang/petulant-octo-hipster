@@ -28,10 +28,10 @@
 (defn farey [n]
   "useful to generate coprimes"
   "http://en.wikipedia.org/wiki/Farey_sequence#Next_term"
-  (loop [r [[0 1] [1 n]]]
-    (let [last-pos (count r)
-          [[a b] [c d]] (subvec r (- last-pos 2) last-pos)]
-      (if (> c n)
-        (pop r)
-        (let [k (int (/ (+ n b) d))]
-          (recur (conj r [(- (* k c) a) (- (* k d) b)])))))))
+  (let [f (fn f [[a b] [c d]]
+            (if (> c n)
+              '()
+              (let [k (int (/ (+ n b) d))
+                    next-term [(- (* k c) a) (- (* k d) b)]]
+                (lazy-seq (cons [c d] (f [c d] next-term))))))]
+    (cons [0 1] (f [0 1] [1 n]))))
