@@ -1,7 +1,5 @@
 (ns euler.p083)
 
-; game rule states that D((0,0) -> (h,k)) = min(D((0,0) -> (h-1,k)), D((0,0) -> (h,k-1)))
-
 (def matrix
   (vec
     (map
