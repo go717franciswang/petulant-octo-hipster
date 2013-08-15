@@ -1,34 +1,28 @@
 (ns euler.p078
   (:require euler.helper))
 
-; copied from p031 (the coin combination problem)
+(def k-seq (interleave (rest (range)) (map - (rest (range)))))
 
-(def divisible-by 1000000)
+; partition formula
+(def p 
+  (memoize 
+    (fn [n]
+      (cond
+        (< n 0) 0
+        (< n 2) 1
+        :else (bigint
+                (reduce +
+                  (take-while #(not= % 0)
+                    (map
+                      (fn [k]
+                        (let [sign (if (even? k) -1 1)
+                              pentagonal (/ (* k (dec (* 3 k))) 2)]
+                          (* sign (p (- n pentagonal)))))
+                      k-seq))))))))
 
-(def ways-cache (atom {}))
-
-(def ways
-  (fn 
-    ([total-val max-coin-val]
-      (let [max-coins-used (int (/ total-val max-coin-val))]
-        ;(println use-coin-val max-coins-used)
-        (reduce
-          +
-          (map 
-            #(let [next-coin-val (dec max-coin-val)
-                   val-left (- total-val (* max-coin-val %))]
-               (cond
-                 (> next-coin-val val-left) 0
-                 (<= val-left 1) val-left
-                 (> val-left next-coin-val) (ways val-left next-coin-val)
-                 :else (get @ways-cache val-left)))
-            (reverse (range (inc max-coin-val)))))))))
-
-(loop [i 1]
-  (let [coin-vals (bigint i)
-        a (ways (bigint i) coin-vals)]
-    (swap! ways-cache assoc i a)
-    (println [i a])
-    (if (or (= i 10) (zero? (mod a divisible-by)))
-      [i a]
-      (recur (inc i)))))
+(time
+  (loop [i 1]
+    (let [a (p (bigint i))]
+      (if (zero? (mod a divisible-by))
+        [i a]
+        (recur (inc i))))))
