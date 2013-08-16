@@ -5,32 +5,42 @@
 ; Thm 4: x1 * .. * xn-1 <= n - 1
 ; Thm 6: x1 + .. + xn <= 2n to bound search space
 
-(defn min-product-sum [size]
-  (let [suffix (loop [candidates (map #(vector [%] %) (range 1 (inc size)))]
-                 (if (= (dec size) (count (first (first candidates))))
-                   candidates
-                   (recur 
-                     (for [[values product] candidates
-                           :let [max-val (last values)]
-                           next-val (range 1 (inc (min (quot size product) max-val)))]
-                       [(conj values next-val) (* product next-val)]))))]
-    (reduce min
-      (filter identity
-        (map
-          (fn [[series product]]
-            (let [sum (reduce + series)
-                  error (if (= 1 product) 1 (mod sum (dec product)))]
-              (when (zero? error)
-                (+ sum (quot sum (dec product))))))
-          suffix)))))
+(def max-size 12000)
 
+(def factors 
+  (loop [regens (map #(vector [%] %) (range 2 (inc (* max-size))))
+         results []]
+    (let [more-results (for [[regen product] regens
+                             :let [cap (last regen)]
+                             next-factor (range 2 (inc cap))
+                             :let [next-product (* next-factor product)]
+                             :while (<= next-product (* 2 max-size))]
+                         [(conj regen next-factor) next-product])
+          new-regens (filter
+                       (fn [[regen product]]
+                         (< (* product 2) (* max-size 2)))
+                       more-results)
+          new-results (concat results more-results)]
+      (if (empty? new-regens)
+        new-results
+        (recur new-regens new-results)))))
+
+(def inf (/ 1 0.0))
+
+(def min-product-sums
+  (reduce 
+    (fn [m [regen product]]
+      (let [sum (reduce + regen)
+            size (+ (count regen) (- product sum))
+            best-sum (get m size inf)]
+        (if (< product best-sum)
+          (assoc m size product)
+          m)))
+    {}
+    factors))
+                           
 (reduce +
-  (set 
-    (map 
-      (fn [s]
-        (let [a (min-product-sum s)]
-          (println [s a])))
-      (range 2 12001))))
+  (distinct
+    (map second
+      (filter #(> max-size (first %)) min-product-sums))))
 
-
-      
