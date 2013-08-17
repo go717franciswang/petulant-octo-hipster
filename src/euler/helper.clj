@@ -35,3 +35,6 @@
                     next-term [(- (* k c) a) (- (* k d) b)]]
                 (lazy-seq (cons [c d] (f [c d] next-term))))))]
     (cons [0 1] (f [0 1] [1 n]))))
+
+(defn num-2-seq [n]
+  (map #(read-string (str %)) (str n)))
