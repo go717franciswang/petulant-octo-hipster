@@ -1,7 +1,7 @@
 (ns euler.p093
   (:require [clojure.math.combinatorics :as combo]))
 
-(def max-num 100)
+(def max-num 9)
 
 (def operations [+ - * /])
 
@@ -34,19 +34,22 @@
 
 (defn all-answers [num-set]
   (let [answers (distinct
-                  (for [fs operation-seq
-                        nums (combo/permutations num-set)]
-                    (loop [num-set (rest nums)
-                           fs fs
-                           result (float (first nums))]
-                      (if (empty? num-set)
-                        result
-                        (recur (rest num-set) (rest fs) ((first fs) result (first num-set)))))))
+                  (flatten
+                    (for [fs operation-seq
+                          nums (combo/permutations num-set)]
+                      (let [[f1 f2 f3] fs
+                            [n1 n2 n3 n4] nums
+                            special-case (f2 (f1 (float n1) n2) (f3 n3 n4))
+                            non-special (f1 (f2 (f3 (float n1) n2) n3) n4)]
+                        [special-case non-special]))))
         pos-int-answers (sort (map int (filter pos-int? answers)))]
     pos-int-answers))
 
 (defn longest-answer-set [num-set]
-  (reduce max (map count (partition-seq (all-answers num-set)))))
+  (let [partittons (partition-seq (all-answers num-set))]
+    (if (= 1 (first (first partittons)))
+      (count (first partittons))
+      0)))
 
 (first
   (reverse
