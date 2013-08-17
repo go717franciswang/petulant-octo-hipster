@@ -38,3 +38,8 @@
 
 (defn num-2-seq [n]
   (map #(read-string (str %)) (str n)))
+
+(defn gcd [a b]
+  (if (zero? b)
+    a
+    (recur b (mod a b))))
