@@ -54,7 +54,7 @@
         [head fib-digits] (fib-head i)
         head (apply str (take 9 (str head)))]
     (if (and
-          (pandigital? head))
-          ;(pandigital? tail))
+          (pandigital? head)
+          (pandigital? tail))
       i
       (recur (inc i)))))
