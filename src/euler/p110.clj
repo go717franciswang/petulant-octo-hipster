@@ -16,6 +16,10 @@
 (defn number [prime-factors]
   (reduce * (bigint 1) prime-factors))
 
+(def num-cap (reduce * (take 15 primes)))
+
+(loop [
+
 (loop [prime-factors [2]
        original-n 2
        original-solutions 2]
