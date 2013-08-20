@@ -23,7 +23,7 @@
               :when v]
           [[y x] v]))))))
 
-; dijkstra to visit all nodes
+; dijkstra? to visit all nodes
 (def reduced-val
   (loop [visited-nodes start-edge
          edge-nodes start-edge
