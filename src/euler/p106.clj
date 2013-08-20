@@ -11,7 +11,6 @@
   (reduce +
     (map
       (fn [subset-size]
-        ;(println subset-size)
         (reduce +
           (map
             (fn [b]
@@ -20,7 +19,6 @@
                 (count
                   (filter
                     (fn [c]
-                      ;(println c b)
                       (let [signs (map - c b)]
                         (and (some pos? signs)
                              (some neg? signs))))

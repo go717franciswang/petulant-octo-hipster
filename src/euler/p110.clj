@@ -1,45 +1,51 @@
 (ns euler.p110
   (:require euler.helper))
 
-(def size 1000)
-
 (def primes (euler.helper/primes 10000))
 
-(defn num-solutions [prime-factors]
+(defn num-solutions [prime-map]
   (/
     (inc (reduce *
       (map 
-        (fn [[_ factors]]
-          (inc (* 2 (count factors))))
-        (group-by identity prime-factors)))) 2))
+        (fn [[_ factors-count]]
+          (inc (* 2 factors-count)))
+        prime-map))) 2))
 
 (defn number [prime-factors]
   (reduce * (bigint 1) prime-factors))
 
-(def num-cap (reduce * (take 15 primes)))
+; we know the final answer will be consisted of no more than the first 15 prime numbers
+; b/c they form a number that have at least 4M solutions
+(def prime-count 15)
+(def num-cap (reduce * (take prime-count primes)))
 
-(loop [
+(def twos-needed-to-reach-cap (int (/ (Math/log num-cap) (Math/log 2))))
 
-(loop [prime-factors [2]
-       original-n 2
-       original-solutions 2]
-  ;(println prime-factors)
-  (let [max-factor (reduce max prime-factors)
-        try-upto (+ 2 (.indexOf primes max-factor))
-        tries (take try-upto primes)
-        _ (println tries)
-        new-factor (first (last
-                     (sort-by second
-                       (map
-                         (fn [prime]
-                           (let [new-factors (conj prime-factors prime)
-                                 solutions (num-solutions new-factors)
-                                 n (number new-factors)
-                                 r (/ (- solutions original-solutions) (float (- n original-n)))]
-                           [prime r]))
-                         tries))))
-        new-factors (conj prime-factors new-factor)]
-    (let [solutions (num-solutions new-factors)]
-      (if (> solutions size)
-        (* original-n new-factor)
-        (recur new-factors (* original-n new-factor) solutions)))))
+(defn pow [n i]
+  (reduce * (bigint 1) (repeat i n)))
+
+(def init-results 
+  (for [i (range 1 (inc twos-needed-to-reach-cap))]
+    [(pow 2 i) (sorted-map 2 i)]))
+
+(def prime-factor-candidates
+  (loop [primes (rest (take prime-count primes))
+         results init-results]
+    (println (first primes) (count results))
+    (if (empty? primes)
+      results
+      (let [p (first primes)
+            new-results (for [[n prime-map] results
+                              :let [earlier-prime-cap (last (last prime-map))
+                                    i-cap (min earlier-prime-cap
+                                               (int (/ (Math/log (/ num-cap n)) (Math/log p))))]
+                              i (range 0 (inc i-cap))]
+                            [(* n (pow p i)) (conj prime-map [p i])])]
+        (recur (rest primes) new-results)))))
+
+(apply min
+  (map first
+    (filter 
+      (fn [[_ prime-map]]
+        (> (num-solutions prime-map) 4E6))
+      prime-factor-candidates)))
