@@ -1,8 +1,6 @@
-(ns euler.p114)
+(ns euler.p115)
 
-(def min-block-size 3)
-
-(def total-length 50)
+(def min-block-size 50)
 
 (def ways-red-start 
   (memoize
@@ -28,4 +26,7 @@
             (ways-red-start left)))
         (range (inc length))))))
 
-(ways-any-start total-length)
+(loop [n 50]
+  (if (> (ways-any-start n) 1E6)
+    n
+    (recur (inc n))))
