@@ -109,10 +109,11 @@
                            (recur (rest choices))))
                 :else (recur (rest choices))))))))))
 
-(reduce +
-  (map
-    (fn [p]
-      (clojure.pprint/pprint p)
-      (let [[a b c] (take 3 (first p))]
-        (+ (* a 100) (* b 10) c)))
-    (map solve-guess puzzles)))
+(time
+  (reduce +
+    (map
+      (fn [p]
+        (clojure.pprint/pprint p)
+        (let [[a b c] (take 3 (first p))]
+          (+ (* a 100) (* b 10) c)))
+      (pmap solve-guess puzzles))))
