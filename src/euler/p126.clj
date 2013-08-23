@@ -13,14 +13,17 @@
 (defn cubes-required [a b c l]
   (+ (* 2 (+ (* a b) (* b c) (* a c))) (* 4 (dec l) (+ a b c l -2))))
 
-(sort-by first
-  (filter #(= (second %) 1000)
-    (frequencies
-      (for [a (range 1 (inc max-cuboid-size))
-            b (range 1 (inc a))
-            c (range 1 (inc b))
-            l (rest (range))
-            :let [cubes (cubes-required a b c l)]
-            :while (<= cubes n-cap)]
-        (cubes-required a b c l)))))
+(time
+  (sort-by first
+    (filter #(= (second %) 1000)
+      (frequencies
+        (for [a (range 1 (inc max-cuboid-size))
+              b (range 1 (inc a))
+              :while (<= (* 2 (+ (* a b) a b)) n-cap)
+              c (range 1 (inc b))
+              :while (<= (* 2 (+ (* a b) (* b c) (* a c))))
+              l (rest (range))
+              :let [cubes (cubes-required a b c l)]
+              :while (<= cubes n-cap)]
+          cubes)))))
 
