@@ -8,17 +8,17 @@
                       (let [base (* x x)
                             t (take-while #(<= % n) (map #(+ base (* x %)) (range)))]
                         t))]
-  (loop [sieve (vec (interleave (repeat (inc half) false) (repeat half true)))
+  (loop [sieve (transient (vec (interleave (repeat (inc half) false) (repeat half true))))
          x 3]
     (if (> x limit)
-      (cons 2 (drop 1 (filter identity (map-indexed (fn [k v] (when v k)) sieve))))
+      (cons 2 (drop 1 (filter identity (map-indexed (fn [k v] (when v k)) (persistent! sieve)))))
       (if (get sieve x)
         (do 
           (recur 
             (reduce
               (fn [sieve i]
                 (if (get sieve i)
-                  (assoc sieve i false)
+                  (assoc! sieve i false)
                   sieve))
               sieve
               (x-multiples x n))
