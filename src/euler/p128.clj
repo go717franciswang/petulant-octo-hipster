@@ -1,7 +1,4 @@
-(ns euler.p128
-  (:require [euler.helper :as h]))
-
-(def primes (set (h/primes 1E3)))
+(ns euler.p128)
 
 (def increments (map (partial * 6) (rest (range))))
 
