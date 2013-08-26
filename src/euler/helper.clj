@@ -25,6 +25,41 @@
             (+ 2 x)))
         (recur sieve (+ 2 x)))))))
 
+(defn primes2 [n]
+  "prime1 using Java array"
+  (let [limit (int (Math/pow n 0.5))
+        half (int (/ n 2))
+        sieve (boolean-array (interleave (repeat (inc half) false) (repeat half true)))]
+    (doseq [x (range 3 limit 2)
+            :when (aget sieve x)
+            i (range (* x x) n x)]
+      (aset-boolean sieve i false))
+    (cons 2 (drop 1 (filter identity (map-indexed (fn [k v] (when v k)) (vec sieve)))))))
+
+(defn primes3 [n]
+  "ported from http://www.mathblog.dk"
+  (let [limit (int (/ (dec (Math/sqrt n)) 2))
+        sieve-bound (int (/ (dec n) 2))
+        sieve (boolean-array (inc sieve-bound) true)]
+    (loop [i 1
+           ii 3
+           iii 4]
+      (when (<= i limit)
+        (when (aget sieve i)
+          (loop [j iii]
+            (when (<= j sieve-bound)
+              (aset-boolean sieve j false)
+              (recur (+ j ii)))))
+        (recur (inc i) (+ ii 2) (+ iii (* 4 (inc i))))))
+    (loop [i 1
+           ii 3
+           result (transient [2])]
+      (if (<= i sieve-bound)
+        (if (aget sieve i)
+          (recur (inc i) (+ ii 2) (conj! result ii))
+          (recur (inc i) (+ ii 2) result))
+        (persistent! result)))))
+
 (defn farey [n]
   "useful to generate coprimes"
   "http://en.wikipedia.org/wiki/Farey_sequence#Next_term"
