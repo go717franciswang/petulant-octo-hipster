@@ -3,7 +3,7 @@
 ; x+y = a, x-y = b, ..
 ; => 2x = a+b = c+d, 2y = e+f = a-b; 2z = c-d = e-f
 ; => a > c > e > d > f > b
-; => d = a-e, f = 2a-2c, b = c-e
+; => d = a-e, f = a-c, b = c-e
 
 (defn valid? [n]
   (and (> n 0) (== n (int n))))
