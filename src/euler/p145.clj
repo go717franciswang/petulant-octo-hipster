@@ -1,39 +1,26 @@
 (ns euler.p145)
 
-(def reversible-count 
-  (memoize 
-    (fn [digits remainder allow-zero?]
-      (cond
-        (= digits 1) (count (filter #(and (odd? %) (< % 10)) (map #(+ % % remainder) (range 10))))
-        (= digits 2) (if (zero? remainder)
-                       (let [start (if allow-zero? 0 1)]
-                         (reduce +
-                           (for [a (range start 10)
-                                 b (range start 10)
-                                 :when (and (odd? (+ remainder a b)) (< (+ a b) 10))]
-                             1)))
-                       0)
-        :else (let [start (if allow-zero? 0 1)
-                    valid-choices (for [a (range start 10)
-                                        b (range start 10)
-                                        :when (odd? (+ remainder a b))]
-                                    (+ a b))
-                    remainder-0 (count (filter #(< % 10) valid-choices))
-                    remainder-1 (- (count valid-choices) remainder-0)
-                    digits (- digits 2)]
-                (+ (* remainder-0 (reversible-count digits 0 true))
-                   (* 0 (reversible-count digits 1 true))))))))
+(def pairs-count 
+  (memoize
+    (fn [carry-over? with-carry-over? start]
+      (let [predicate (fn [n]
+                        (let [n (if with-carry-over? (inc n) n)]
+                          (and (odd? n)
+                               ((if carry-over? > <) n 10))))]
+      (count (for [a (range start 10)
+                   b (range start 10)
+                   :let [s (+ a b)]
+                   :when (predicate s)]
+               s))))))
 
-(time
-  (reduce + (map #(reversible-count % 0 false) (range 1 4))))
+(defn rev-count [digits]
+  (cond
+    (= digits 1) 0
+    (even? digits) (* (pairs-count false false 1)
+                      (int (Math/pow (pairs-count false false 0) (/ (- digits 2) 2))))
+    (= (mod digits 4) 1) 0
+    :else (* 5 
+            (pairs-count true false 1)
+            (int (Math/pow (* (pairs-count false true 0) (pairs-count true false 0)) (/ (- digits 3) 4))))))
 
-(defn rev? [n]
-  (when (not= (mod n 10) 0)
-    (let [r (read-string (apply str (map #(read-string (str %)) (reverse (str n)))))
-          a (+ n r)]
-      (every? odd? (map #(read-string (str %)) (str a))))))
-
-
-(count (filter rev? (range 10000)))
-;(+ 120 (reduce + (map #(reversible-count % 0 false) [4 6 8])))
-(reversible-count 4 0 false)
+(reduce + (map rev-count (range 10)))
