@@ -21,14 +21,9 @@
       (if (= i l)
         max-sum
         (let [n (get nums i)
-              connected-sums (int (max connected-sums (+ connected-sums n)))
+              connected-sums (int (max n (+ connected-sums n)))
               max-sum (int (max max-sum connected-sums))]
           (recur (inc i) max-sum connected-sums))))))
-
-; (def nums
-;   [[0 1 2]
-;    [3 4 5]
-;    [6 7 8]])
 
 (def cols (delay (apply mapv vector nums)))
 
@@ -47,7 +42,7 @@
     (apply concat
       (for [i (range 1 (dec size))]
         (vector
-          (vec (map #(get-in nums [(- (- size 2) %) %]) (range (- size i))))
-          (vec (map #(get-in nums [(- (dec size) %) (inc %)]) (range (- size i))))))))))
+          (vec (map #(get-in nums [(- (- size 1 i) %) %]) (range (- size i))))
+          (vec (map #(get-in nums [(- (dec size) %) (+ i %)]) (range (- size i))))))))))
 
 (reduce max (map max-seq (lazy-cat nums @cols @diagonals @anti-diagonals)))
