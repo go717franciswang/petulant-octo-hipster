@@ -2,11 +2,47 @@
   (:require [euler.helper :as h]
             [clojure.math.combinatorics :as combo]))
 
-(def cap 45)
+(def cap 80)
 
 (def primes (h/primes cap))
 
+(def useless-primes (cons 11 (drop-while #(< % 14) primes)))
+(defn useful-num? [n]
+  (not (some #(zero? (mod n %)) useless-primes)))
+
+(defn inverse-sq-sum [nums]
+  (reduce + (map #(/ 1 % %) nums)))
+
 (def num-set 
+  (memoize
+    (fn [p]
+      (let [p-multiples (filter useful-num? (range (* 2 p) (inc cap) p))
+            result (map #(set %) (filter
+                     #(not= 0 (mod (denominator (inverse-sq-sum %)) p))
+                     (reduce
+                       (fn [result n]
+                         (concat result (map #(conj % n) result) [[n]]))
+                       [[p]]
+                       p-multiples)))]
+        (vec (distinct result))))))
+
+(def num-set3
+  (memoize
+    (fn [p]
+      (let [p-multiples (filter useful-num? (range (* 2 p) (inc cap) p))
+            result (map #(set (second %)) (filter
+                     #(not= 0 (mod (denominator (first %)) p))
+                     (reduce
+                       (fn [result n]
+                         (let [inv (/ 1 n n)]
+                           (concat result 
+                                   (map (fn [[sum nums]] [(+ sum inv) (conj nums n)]) result)
+                                   [[(/ 1 n n) [n]]])))
+                       [[(/ 1 p p) [p]]]
+                       p-multiples)))]
+        (vec (distinct result))))))
+
+(def num-set2
   (memoize
     (fn [p]
       (loop [n p
@@ -25,15 +61,13 @@
                           result)
                         [[inv [n]]])))))))))
 
-(defn not-divisible-by [nums qs]
-  (every? (fn [q]
-            (every? #(not= 0 (mod % q)) nums))
-          qs))
+(defn not-divisible-by [nums q]
+  (every? #(not= 0 (mod % q)) nums))
 
-(defn join-set [as bs non-qs]
+(defn join-set [as bs q]
   (for [a as
         b bs
-        :when (not-divisible-by (clojure.set/difference b a) non-qs)]
+        :when (not-divisible-by (clojure.set/difference a b) q)]
     (clojure.set/union a b)))
 
 (def init-result
@@ -45,35 +79,18 @@
                 result)) 0)
       (recur (* n 2) (concat result (map #(conj % n) result) [#{n}])))))
 
-(time
-(doseq [x (rest primes)]
-  (println (count (num-set x)))))
+(def candidates
+  (reduce
+    (fn [results p]
+      (println p (count results))
+      (let [nums (num-set p)]
+        (concat results nums (if (some empty? [results nums]) [] (join-set results nums p)))))
+    []
+    [3 5 7 13]))
 
+(defn valid? [candidate]
+  (let [a (reduce + (map #(/ 1 % %) candidate))]
+    (get init-result (- 1/2 a))))
 
-; (def candidates
-;   (let [ps [3 5 7 13]
-;         num-sets {3 (num-set 3)
-;                   5 (num-set 5)
-;                   7 (num-set 7)
-;                   13 (num-set 13)}]
-;     (flatten
-;       (for [size (range 1 (inc (count ps)))
-;             primes (combo/combinations ps size)
-;             :let [_ (println primes)]]
-;         (loop [result (num-sets (first primes))
-;                non-qs [(first primes)]
-;                primes (rest primes)]
-;           (if (empty? primes)
-;             result
-;             (recur (join-set result (num-sets (first primes)) non-qs) 
-;                    (conj non-qs (first primes)) 
-;                    (rest primes))))))))
-; 
-; (println (count candidates))
-; 
-; (defn valid? [candidate]
-;   (let [a (reduce + (map #(/ 1 % %) candidate))]
-;     (get init-result (- 1/2 a))))
-; 
-; (count (set (filter valid? candidates)))
-; 
+(count (set (filter valid? candidates)))
+
