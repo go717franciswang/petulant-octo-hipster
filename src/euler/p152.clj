@@ -13,53 +13,16 @@
 (defn inverse-sq-sum [nums]
   (reduce + (map #(/ 1 % %) nums)))
 
-(def num-set 
-  (memoize
-    (fn [p]
-      (let [p-multiples (filter useful-num? (range (* 2 p) (inc cap) p))
-            result (map #(set %) (filter
-                     #(not= 0 (mod (denominator (inverse-sq-sum %)) p))
-                     (reduce
-                       (fn [result n]
-                         (concat result (map #(conj % n) result) [[n]]))
-                       [[p]]
-                       p-multiples)))]
-        (vec (distinct result))))))
-
-(def num-set3
-  (memoize
-    (fn [p]
-      (let [p-multiples (filter useful-num? (range (* 2 p) (inc cap) p))
-            result (map #(set (second %)) (filter
-                     #(not= 0 (mod (denominator (first %)) p))
-                     (reduce
-                       (fn [result n]
-                         (let [inv (/ 1 n n)]
-                           (concat result 
-                                   (map (fn [[sum nums]] [(+ sum inv) (conj nums n)]) result)
-                                   [[(/ 1 n n) [n]]])))
-                       [[(/ 1 p p) [p]]]
-                       p-multiples)))]
-        (vec (distinct result))))))
-
-(def num-set2
-  (memoize
-    (fn [p]
-      (loop [n p
-             result []]
-        (if (> n cap)
-          (map #(set (second %)) (filter #(not= 0 (mod (denominator (first %)) p)) result))
-          (if (some #(zero? (mod n %)) (drop-while #(< % 14) primes))
-            (recur (+ n p) result)
-            (let [inv (/ 1 n n)]
-              (recur 
-                (+ n p)
-                (concat result
-                        (map 
-                          (fn [[sum nums]]
-                            [(+ sum inv) (conj nums n)])
-                          result)
-                        [[inv [n]]])))))))))
+(defn num-set [p]
+  (let [p-multiples (filter useful-num? (range (* 2 p) (inc cap) p))
+        result (map #(set %) (filter
+                 #(not= 0 (mod (denominator (inverse-sq-sum %)) p))
+                 (reduce
+                   (fn [result n]
+                     (concat result (map #(conj % n) result) [[n]]))
+                   [[p]]
+                   p-multiples)))]
+    (vec (distinct result))))
 
 (defn not-divisible-by [nums q]
   (every? #(not= 0 (mod % q)) nums))
