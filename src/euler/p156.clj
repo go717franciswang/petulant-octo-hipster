@@ -31,7 +31,21 @@
     (println digit-diff carry-diff)
     (+ 0 carry-diff)))
 
-(diff-f 0 12 1)
+;(diff-f 0 12 1)
+
+(defn f [n d]
+  (let [digits (vec (reverse (map #(read-string (str %)) (str n))))
+        l (count digits)]
+    (for [i (range l)
+          :let [digit (digits i)
+                num-base (if (zero? i) (read-string (apply str (reverse (subvec digits 0 i))))
+                base (if (>= digit d) 1 0)
+                other-digits (* (Math/pow 10 i) 
+                                (if (< i (dec l))
+                                  (read-string (apply str (reverse (subvec digits (inc i))))) 0))]]
+      (+ base other-digits))))
+
+(f 12 1)
 
 
 
