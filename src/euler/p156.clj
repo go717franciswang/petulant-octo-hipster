@@ -9,19 +9,27 @@
                      (fn [d1 d2]
                        (if (and (< d1 k) (<= k d2)) 1 0))
                      (concat digits1 (repeat 0)) digits2))
-        carry-diff (loop [digits1 (rest digits1)
-                          digits2 (rest digits2)
+        carry-diff (loop [digits1 digits1
+                          digits2 digits2
+                          i 1
                           r 0N]
                      (if (empty? digits2)
                        r
                        (recur (rest digits1)
                               (rest digits2)
+                              (* i 10)
                               (+ r
-                                (- (read-string (apply str (reverse digits2))) 
-                                   (if (empty? digits1) 0 
-                                     (read-string (apply str (reverse digits1)))))))))]
+                                (* i 
+                                   (+
+                                     (let [d1 (or (first digits1) 0)
+                                           d2 (first digits2)]
+                                       (if (and (< d1 k) (<= k d2)) 1 0))
+                                     (- (if (empty? (rest digits2)) 0
+                                          (read-string (apply str (reverse (rest digits2)))))
+                                       (if (empty? (rest digits1)) 0 
+                                         (read-string (apply str (reverse (rest digits1))))))))))))]
     (println digit-diff carry-diff)
-    (+ digit-diff carry-diff)))
+    (+ 0 carry-diff)))
 
 (diff-f 0 12 1)
 
