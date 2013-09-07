@@ -14,19 +14,31 @@
         r
         (recur (* q 10) r)))))
 
-(loop [n 1]
-  (when (< n 1E15)
-    (println n (f n 1) (- n (f n 1)))
-    (let [n2 (* 2 n)]
-      (println n2 (f n2 1) (- n2 (f n2 1))))
-    (recur (* n 10))))
+(defn valid-nums [a b d]
+  (for [x (range a (inc b))
+        :when (zero? (- (f x d) x))]
+    x))
+ 
+(defn s [d]
+  (loop [searches [[1 1E11]]
+         answers []]
+    (if-let [[a b] (first searches)]
+      (if (== (- b a) 1)
+        (if (== (f a d) a)
+          (recur (rest searches) (conj answers a))
+          (recur (rest searches) answers))
+        (let [m (quot (+ a b) 2)
+              fm (f m d)
+              fa (f a d)
+              fb (f b d)
+              ; there cannot be an answer when fm < a b/c no n b/w a and m can cross x=x
+              ; similarly for fa > m
+              search-lower? (and (>= fm a) (>= m fa))
+              search-upper? (and (>= fb m) (>= b fm))
+              more-searches (filter identity 
+                                    [(if search-lower? [a m] nil)
+                                     (if search-upper? [m b] nil)])]
+          (recur (into (rest searches) more-searches) answers)))
+      (reduce + answers))))
 
-(for [x (range 199981 200020)
-      :let [a (f x 1)]
-      :when (= x a)]
-  (println x))
-
-
-
-
-
+(bigint (reduce + (map s (range 1 10))))
