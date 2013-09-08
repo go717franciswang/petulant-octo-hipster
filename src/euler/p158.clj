@@ -17,6 +17,7 @@
 ; not an efficient implementation
 ; was lucky that the correct under came under 20 in length
 ; out of memory when tried 26 on old laptop
+; (2^n - (n+1)) produces the correct result after reading thread
 (defn seq-count [x]
   (let [partitions (loop [n 1
                           partitions [[[0] []]
