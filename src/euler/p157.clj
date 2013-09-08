@@ -3,6 +3,9 @@
 
 (def primes (h/primes (Math/sqrt 2E10)))
 
+; p = 10^n * (a'+b') / (a'b'm)
+; where a'm = a, b'm = b, coprime(a',b') => coprime(a'+b', a'b')
+; iterate over coprimes that divides p and generate factors of m
 (defn solutions-count [n]
   (let [coprimes (distinct 
                    (for [count2 (range (inc n))
