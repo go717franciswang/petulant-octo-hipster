@@ -78,3 +78,10 @@
   (if (zero? b)
     a
     (recur b (mod a b))))
+
+(defn P [n x]
+  (reduce * 1N (range (inc (- n x)) (inc n))))
+
+(defn C [n x]
+  (/ (P n x) (reduce * 1N (range 1 (inc x)))))
+
