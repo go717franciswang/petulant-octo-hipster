@@ -1,13 +1,11 @@
 (ns euler.p160)
 
-; cap = 5 => 2496
-; cap = 6 => 4544
-; cap = 7 => 51552 from bruteforce
+; appears to be a more efficient algo: http://www.mathpages.com/home/kmath489.htm
 
-(def cap 1E5)
+(def cap 1E12)
 
 (def length 5)
-(def d (int (Math/pow 10 5)))
+(def d (int (Math/pow 10 length)))
 
 (defn no-trailing-zeros [n]
   (if (zero? n)
@@ -17,7 +15,10 @@
       n)))
 
 (defn last-digits [n]
-  (mod n d))
+  (let [a (mod n d)]
+    (if (< a (/ d 10))
+      (+ d a)
+      a)))
 
 (defn fac-factor-count [n]
   (loop [n1 n
@@ -29,13 +30,6 @@
 
 (defn truncate-multiply [a b]
   (last-digits (* a b)))
-
-; (println 
-; (loop [n 1
-;        r 1N]
-;   (if (== n 1E6)
-;     r
-;     (recur (inc n) (last-digits (no-trailing-zeros (* r n)))))))
 
 (defn truncated-pow [x n]
   (loop [m {1 x}
@@ -61,27 +55,41 @@
       (recur (/ n p) (inc c))
       c)))
 
+(def factor2-5
+  (loop [f2 1
+         nums (sorted-set)]
+    (if (> f2 cap)
+      nums
+      (recur
+        (* f2 2)
+        (into nums
+          (loop [f2-5 f2
+                 nums [f2-5]]
+            (if (> f2-5 cap)
+              nums
+              (recur (* f2-5 5) (conj nums f2-5)))))))))
+
 (def last-digit-freq
   (loop [m {}
-         n 1]
-    (let [c2 (factor-count n 2)
-          c5 (factor-count n 5)
-          n0 (int (/ n (Math/pow 2 c2) (Math/pow 5 c5)))]
-      (if (< n 1E5)
-        (recur (update-in m [n0] 
-                          (fnil inc 0N)) 
-               (inc n))
-        m))))
+         n 2]
+    (cond 
+      (>= n d) m
+      (or (zero? (mod n 2)) (zero? (mod n 5))) (recur m (inc n))
+      :else (let [c (reduce +
+                      (for [k factor2-5
+                            :let [c (/ (- (/ cap k) n) d)]
+                            :while (> c 0)]
+                        (Math/ceil c)))]
+              (recur (conj m [n c]) (inc n))))))
 
-(println (take 20 last-digit-freq))
-
+; take out factor 2s and 5s from n!
+; find occurances of each possible trailing 5 digits
+; rest of pow and multiplication can be efficiently calculated
 (reduce
   (fn [r ld]
     (truncate-multiply r ld))
-    (truncated-pow 2 (- (fac-factor-count 2) (fac-factor-count 5)))
+  (truncated-pow 2 (- (fac-factor-count 2) (fac-factor-count 5)))
   (map
     (fn [[ld c]]
       (truncated-pow ld c))
     last-digit-freq))
-
-
