@@ -3,14 +3,13 @@
 (defn valid? [n]
   (loop [a 1
          b 1
-         c 1
-         r #{}]
+         c (int (mod 3 n))]
     (let [d (int (mod (+ a b c) n))]
       (if (zero? d)
         false
-        (if (contains? r [a b c])
+        (if (== a b c 1)
           true
-          (recur b c d (conj r [a b c])))))))
+          (recur b c d))))))
 
 (loop [n 27
        r []]
