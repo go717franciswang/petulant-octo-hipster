@@ -7,11 +7,11 @@
 
 (def cap 1E8)
 
-(def primes (h/primes3 cap))
+(def primes (h/primes3 (+ 2 (/ cap 2))))
 
 (defn all-divisors [factors]
   (let [l (quot (count factors) 2)]
-    (for [l0 (range 1 (inc l))
+    (for [l0 (range 1 (+ 2 l))
           f0 (combo/combinations factors l0)]
       (reduce * f0))))
 
@@ -22,13 +22,13 @@
     (all-divisors factors)))
 
 (reduce
-  (fn [c p]
+  (fn [sum p]
     (let [d (- p 2)
           n (* 2 d)]
       (cond 
-        (> n cap) c
-        (not (.isProbablePrime (biginteger (inc (* 2 d))) 15)) c
-        (.isProbablePrime (biginteger d) 15) (do #_(println (* d 2)) (inc c))
+        (> n cap) sum
+        (not (.isProbablePrime (biginteger (inc (* 2 d))) 15)) sum
+        (.isProbablePrime (biginteger d) 15) (do (println n) (+ sum n))
         :else (let [limit (Math/floor (Math/sqrt n))
                     factors (loop [n0 n
                                    ps (rest primes)
@@ -42,10 +42,10 @@
                                       mod0 (recur (/ n0 p) ps (conj factors p))
                                       :else (recur n0 (rest ps) factors))))))]
                 (if (empty? factors)
-                  c
+                  sum
                   (if (valid? n factors)
-                    (do #_(println n) (inc c))
-                    c))))))
+                    (do (println n) (+ sum n))
+                    sum))))))
   1
   (rest primes))
 
