@@ -29,7 +29,7 @@
   (fn [[tw t] w]
     (let [tw (+ tw w)
           t (+ t batch-size)]
-      (println tw t (float (/ tw t)))
+      (println tw t (double (/ tw t)))
       [tw t]))
   [0 0]
   (pmap simulate-many (repeat batch-size)))
