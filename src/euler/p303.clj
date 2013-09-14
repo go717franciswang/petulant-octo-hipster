@@ -10,7 +10,8 @@
 
 (defn f' [n]
   (let [last-digit (mod n 10)
-        one-digit-candidates (filter #(valid? (mod (* % n) 10)) (range 1 10))]
+        one-digit-candidates (map bigint 
+                                  (filter #(valid? (mod (* % n) 10)) (range 1 10)))]
     (loop [digit-span 10
            candidates one-digit-candidates]
       (let [found (filter #(and (> % 0) (valid? (* n %))) candidates)]
@@ -28,5 +29,6 @@
     (println n a)
     a))
 
+(time
 (reduce +
-  (map f'' (range 1 10001)))
+  (pmap f'' (range 1 10001))))
