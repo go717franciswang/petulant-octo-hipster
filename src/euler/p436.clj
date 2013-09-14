@@ -16,20 +16,20 @@
 
 (defn simulate-many [times]
   (loop [n 0
-         c 0]
+         c 0N]
     (if (< n (inc times))
       (if (simulate)
         (recur (inc n) (inc c))
         (recur (inc n) c))
-      (double c))))
+      c)))
 
-(def batch-size 10000)
+(def batch-size 100000)
 
 (reduce
   (fn [[tw t] w]
     (let [tw (+ tw w)
           t (+ t batch-size)]
-      (println (/ tw t))
+      (println tw t (float (/ tw t)))
       [tw t]))
   [0 0]
   (pmap simulate-many (repeat batch-size)))
