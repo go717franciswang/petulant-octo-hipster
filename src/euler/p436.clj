@@ -23,4 +23,13 @@
         (recur (inc n) c))
       (double c))))
 
-(/ (reduce + (pmap simulate-many (repeat 10000 1E7))) 1E11)
+(def batch-size 10000)
+
+(reduce
+  (fn [[tw t] w]
+    (let [tw (+ tw w)
+          t (+ t batch-size)]
+      (println (/ tw t))
+      [tw t]))
+  [0 0]
+  (pmap simulate-many (repeat batch-size)))
