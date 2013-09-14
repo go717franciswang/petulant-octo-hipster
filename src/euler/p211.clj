@@ -3,9 +3,8 @@
 
 ; bruteforce
 (def size 64E6)
-;(def size 100000)
 
-(time
+#_(time
 (def primes (h/primes3 size)))
 
 (time
