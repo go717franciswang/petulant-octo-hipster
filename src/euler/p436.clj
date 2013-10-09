@@ -66,14 +66,45 @@
            (Math/pow x (dec n1))
            (- 1 x)))))
 
+(defn P [n1 n2]
+  (if (zero? n2)
+    (/ 1 2 (+ n1 2) (fac (dec n1)))
+    (/ 
+      (+ (/ (+ (* n2 n2) (* 2 n2) 1)
+           (+ n2 n1 2) 
+           (+ (* n2 n2) n2)
+           (+ (* n2 n2) (* 3 n2) 2)))
+      (fac (dec n1))
+      (fac (dec n2)))))
+
+(double
 (reduce +
   (for [n1 (range 1 10)
-        n2 (range 0 10)
-        :let [a (if (zero? n2)
-                  (/ 1.0 2 (fac (dec n1)) (+ n1 2))
-                  (iterated-rule simpson-rule (partial f n1 n2) 0 1 5))
-              _ (println n1 n2 a)]]
-    a))
+        n2 (range 0 2)
+        :let [a (P n1 n2)
+              _ (println a)]]
+    a)))
+
+; (defn P-Sn1<1 [n]
+;   (/ 1 (fac n)))
+; 
+; (defn P-S1n1n2<2|n1<1 [n1 n2]
+;   (if (zero? n2)
+;     1
+;     (let [f (fn [n1 n2 Sn1]
+;               (* (/ 1 (fac (dec n1))) 
+;                  (Math/pow Sn1 (dec n1))
+;                  (/ 1 (fac (inc n2)))
+;                  (- (Math/pow (- 2 Sn1) n2) 
+;                     (* (Math/pow (- 1 Sn1) n2) (inc n2)))))]
+;       (iterated-rule simpson-rule (partial f n1 n2) 0 1 5))))
+; 
+; (reduce +
+; (for [n1 (range 1 4)
+;       n2 (range 0 4)]
+;   (let [a (* (P-Sn1<1 n1) (P-S1n1n2<2|n1<1 n1 n2))]
+;     (println n1 n2 a)
+;     a)))
 
     ; (let [f (if (zero? n2)
     ;           (partial f2' n1)
