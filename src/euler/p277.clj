@@ -1,84 +1,40 @@
-(ns euler.p277)
+(ns euler.p277
+  (:require [euler.helper :as h]))
 
-(def s (seq "DdDddUUdDD"))
 (def s (seq "UDDDUdddDDUDDddDdDddDDUDDdUUDd"))
-(def s' (reverse s))
-(def floor 1E6)
 (def floor 1E15)
 
-(defn D' [n]
-  (* n 3))
+; if number start at x, then after seq s, we end up with a1/a2*x + b1/a2
+; => x = (n*a2 - b1) / a1 for some n that makes x an integer
+(defn D [x1 x2]
+  [(/ x1 3) (/ x2 3)])
+(defn U [x1 x2]
+  [(* x1 4/3) (/ (+ (* x2 4) 2) 3)])
+(defn d [x1 x2]
+  [(* x1 2/3) (/ (- (* x2 2) 1) 3)])
 
-(defn d' [n]
-  (/ (inc (* n 3)) 2))
-
-(defn U' [n]
-  (/ (- (* n 3) 2) 4))
-
-(defn run [n]
-  (loop [a n
-         s' s']
-    (if (empty? s')
-      a
-      (let [f (condp = (first s')
-                \D D'
-                \d d'
-                \U U')]
-        (recur (f a) (rest s'))))))
-
-(defn D [n]
-  (/ n 3))
-(defn d [n]
-  (/ (dec (* n 2)) 3))
-(defn U [n]
-  (/ (+ (* n 4) 2) 3))
-
-#_(loop [n 19]
-  (println n)
-  (when (> n 1)
-    (condp = (mod n 3)
-      0 (recur (D n))
-      1 (recur (U n))
-      2 (recur (d n)))))
-
-#_(loop [candidates #{1}]
-  (if (> (count candidates) 99)
-    (println (sort candidates))
-    (recur
-      (into candidates
-        (for [c candidates
-              c1 [(D' c) (d' c) (U' c)]
-              :when (not (ratio? c1))] c1)))))
-
-
-
-#_(loop [candidates #{1}
-       previous-candidates #{}
-       answers []]
-  (println (count candidates) (count answers))
-  (if (or (> (count answers) 2000) (empty? candidates))
-    (reduce min (remove ratio? (map run answers)))
-    (let [more-candidates (for [c candidates
-                                c1 [(D' c) (d' c) (U' c)]
-                                :when (and (not (contains? previous-candidates c1)) (not (ratio? c1)))]
-                            c1)
-          new-candidates (set (filter #(<= (run %) floor) more-candidates))]
-      (recur new-candidates candidates (concat answers (filter #(let [a (run %)] (and (> a floor) (not (ratio? a)))) more-candidates))))))
-
-(def a0 
-  (loop [a0 (bigint (/ floor (run 1)))
-         stop-a 0N]
-    (let [a1 (bigint (run a0))]
-      (if (= a1 stop-a)
-        a0
-        (recur (bigint (* a0 (/ floor a1))) a1)))))
-
-(loop [a1 a0]
-  (let [a2 (run a1)]
-    (println a1 (bigint a2))
-    (cond 
-      (< a2 floor) (recur (inc a1))
-      (ratio? a2) (recur (inc a1))
-      :else a2)))
-
-
+(loop [s s
+       x1 1N
+       x2 0N]
+  (if (empty? s)
+    (do
+      (println [x1 x2])
+      (let [a1 (numerator x1)
+            a2 (denominator x1)
+            b1 (numerator x2)]
+        (loop [n 0N]
+          (let [x (/ (- (* n a2) b1) a1)]
+            (if (ratio? x)
+              (recur (inc n))
+              (do 
+                (println x)
+                (if (> x floor)
+                  x
+                  (recur (inc n)))))))))
+    (let [call (first s)
+          f (condp = call
+              \D D
+              \U U
+              \d d)
+          [x1 x2] (f x1 x2)]
+      (recur (rest s) x1 x2))))
