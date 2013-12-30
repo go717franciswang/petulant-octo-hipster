@@ -17,78 +17,37 @@
 ;                     (recur (inc d) (bigint (+ sum (F new-m (dec n))))))))))))
 ; (println (F 10 10))
 
-; assume there can be exactly i elements > 1, it becomes a manageable combinatorial question
-(def m (bigint 1E3))
+; assume there can be exactly i1 elements > 1, it becomes a manageable combinatorial question
+; then assume there can be exactly i2 elemetns > 2, and so on.
+; let F'(m,n,x) = count of n-tuples such that every element >= x
+; so F(m,n) = F'(m,n,1)
+; F'(m,n,x) = Sum(i=0 to m; C(m,i) * F'(floor(m/x^(n-i)), i, x+1))
+; note had to treat n=0,1,2 as special case to avoid stack overflow
+
+(def m (bigint 1E9))
 (def modular 1234567891)
 
-#_(def permute 
+(def F' 
   (memoize
-    (fn [element-count cap]
-      (cond
-        (zero? element-count) 1
-        (= element-count 1) (- (bigint cap) 1)
-        :else (loop [v 2
-                     c 0]
-                (let [new-cap (quot cap v)]
-                  (if (< new-cap 1)
-                    c
-                    (recur (inc v) (bigint (+ c (permute (dec element-count) new-cap)))))))))))
-
-#_(def permute 
-  (memoize
-    (fn [element-count cap]
-      (cond
-        (zero? element-count) 1
-        (= element-count 1) (- (bigint cap) 1)
-        (= element-count 2) (loop [v 2
-                                   c 0]
-                              (let [new-cap (quot cap v)]
-                                (if (<= new-cap v)
-                                  (+ (* c 2) (int (Math/sqrt cap)) -1)
-                                  (recur (inc v) (+ c (- new-cap v))))))
-        :else (loop [v 2
-                     c 0]
-                (let [new-cap (quot cap v)]
-                  (if (< new-cap 1)
-                    c
-                    (recur (inc v) (bigint (+ c (permute (dec element-count) new-cap)))))))))))
-
-(def permute 
-  (memoize
-    (fn [element-count cap floor]
-      (cond
-        (zero? element-count) 1
-        (= element-count 1) (max (inc (- cap floor)) 0)
-        :else (loop [v 2
+    (fn [m n x]
+      (cond 
+        (zero? n) 1
+        (> (Math/pow x n) m) 0
+        (= n 1) (inc (- m x))
+        (= n 2) (loop [i 0
+                       sum 0N]
+                  (let [a (int (quot m (+ x i)))]
+                    (if (< a (+ x i 1))
+                      (+ (* 2 sum) (+ (- (int (Math/sqrt m)) x) 1))
+                      (recur (inc i) (bigint (+ sum (- a (+ x i))))))))
+        :else (inc (loop [i 1
                      c 0N]
-                (let [new-cap (quot cap v)]
-                  (if (<= v new-cap)
-                    (bigint (+ (* c 2) (- (int (Math/sqrt cap)) 1)))
-                    (recur 
-                      (inc v) 
-                      (bigint (+ c (permute (dec element-count) new-cap (inc v))))))))))))
+                (if (> i n)
+                  c
+                  (let [a (F' (int (quot m (Math/pow x (- n i)))) i (inc x))]
+                    (if (zero? a)
+                      c
+                      (recur (inc i) (bigint (+ c (* (h/C n i) a)))))))))))))
 
-(mod 
-  (loop [i 0
-         c 0N]
-    (when (< i 20)
-    (let [permutations (permute i m 2)]
-      (if (zero? permutations)
-        c
-        (let [new-c (bigint (+ c (* permutations (h/C m i))))]
-          (println i permutations new-c)
-          (recur (inc i) new-c))))))
-  modular)
-
-#_(mod 
-  (loop [i 0
-         c 0N]
-    (when (< i 20)
-    (let [permutations (permute i m)]
-      (if (zero? permutations)
-        c
-        (let [new-c (bigint (+ c (* permutations (h/C m i))))]
-          (println i permutations new-c)
-          (recur (inc i) new-c))))))
-  modular)
-
+(time
+  (mod (F' m m 1) modular))
