@@ -18,9 +18,9 @@
 ;   list all factors of m between n+2 and 2E7
 ;   update these numbers to use n as l(m)
 
-(def cap 1000)
+(def cap (int 2E7))
 
-(def primes (h/primes cap))
+(def primes (h/primes (* 1.1 cap)))
 (def L (int-array (inc cap) 1))
 
 (defn prime-factors [n]
@@ -44,15 +44,16 @@
                               (* f m))))
                         [1]
                         ps)]
-    (take-while #(<= % cap) (drop-while #(< % minimum) factors))))
+    (filter #(and (>= % minimum) (<= % cap)) factors)))
 
 (loop [n 2]
-  (when (<= n (- cap 2))
+  (when (<= n cap)
     (let [m (dec (* n n))
-          factors (get-valid-factors m (+ n 2))]
+          factors (get-valid-factors m (+ n 3))]
       (doseq [x factors]
+        (when (= x 3) (println n x factors))
         (aset ^ints L x n)))
     (recur (inc n))))
 
-(reduce + -3 L)
+(reduce + (drop 3 L))
 
