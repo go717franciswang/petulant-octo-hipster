@@ -20,7 +20,7 @@
 
 (def cap (int 2E7))
 
-(def primes (h/primes (* 1.1 cap)))
+(def primes (h/primes3 (* 1.1 cap)))
 (def L (int-array (inc cap) 1))
 
 (defn prime-factors [n]
@@ -48,6 +48,7 @@
 
 (loop [n 2]
   (when (<= n cap)
+    (when (zero? (mod n 10000)) (println n))
     (let [m (dec (* n n))
           factors (get-valid-factors m (+ n 3))]
       (doseq [x factors]
