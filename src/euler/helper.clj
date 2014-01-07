@@ -85,3 +85,39 @@
 (defn C [n x]
   (/ (P n x) (reduce * 1N (range 1 (inc x)))))
 
+(defn pow-mod [n p m]
+  (cond 
+    (zero? p) 1
+    (zero? n) n
+    :else (loop [i 1
+                 pm n
+                 cache (sorted-map 1 n)]
+            (if (= i p)
+              pm
+              (let [distance (- p i)
+                    closest (last (take-while #(<= % distance) (keys cache)))
+                    multiplier (get cache closest)
+                    new-i (int (+ i closest))
+                    new-pm (mod (* pm multiplier) m)
+                    new-cache (assoc cache new-i new-pm)]
+                (if (zero? new-pm)
+                  new-pm
+                  (recur new-i new-pm new-cache)))))))
+
+(defn big-pow [n p]
+  (cond
+    (zero? p) 1
+    (zero? n) n
+    :else (loop [i 1
+                 bp (bigint n)
+                 cache (sorted-map 1 bp)]
+            (if (= i p)
+              bp
+              (let [distance (- p i)
+                    closest (last (take-while #(<= % distance) (keys cache)))
+                    multiplier (get cache closest)
+                    new-i (int (+ i closest))
+                    new-bp (* bp multiplier)
+                    new-cache (assoc cache new-i new-bp)]
+                (recur new-i new-bp new-cache))))))
+
