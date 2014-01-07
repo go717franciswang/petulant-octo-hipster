@@ -35,6 +35,7 @@
           combo
           (let [new-pow-mod (mod (* pow-mod (h/pow-mod base j 250)) 250)
                 coeff (h/C occurance j)
+                ; TODO: group future-combo by new-pow-mod could improve the bruteforce
                 future-combo (if (zero? new-pow-mod)
                                (* coeff (all-combo-after (inc i)))
                                (* coeff (combinations (inc i) new-pow-mod)))
