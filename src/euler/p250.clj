@@ -1,50 +1,52 @@
 (ns euler.p250
   (:require [euler.helper :as h]))
 
-; get frequency of pow-mod from 1^1 to 250250^250250
+;; we start off with n numbers = 0 mod 250, there are S[0]=2^n subsets including the empty set
+;; next we move onto numbers = 1 mod 250, 
+;;   when we include 1 of such number, S[0+1] = S[0]
+;;   when we include another of such number, S[0+1] += S[0], S[1+1] = S[1]
+;;   when we include yet another of such number, S[0+1] += S[0], S[1+1] += S[1], S[2+1] += S[2]
+;;   ...
+;; next we move onto numbers = 2 mod 250,
+;;   ...
+;;   when we include 1 of such number, S[0+2] += S[0], S[1+2] += S[1], ..., S[(249+2)%250] += S[249]
+;;   ...
+;; ...
+;; we move onto numbers = i mod 250,
+;;   ...
+;;   when we include 1 of such number, S[0+i] += S[0], ..., S[(k+i)%250] += S[k], ...
+;;   ...
+
 (def cap 250250)
 
 (def freq
-  (frequencies (pmap #(h/pow-mod % % 250) (range 1 (inc cap)))))
+  (let [freq (vec (repeat 250 0))]
+    (reduce (fn [freq sum]
+              (update-in freq [sum] inc))
+            freq
+            (pmap #(h/pow-mod % % 250) (range 1 (inc cap))))))
 
-(def base-vals
-  (vec (sort (keys freq))))
+(def modular (h/big-pow 10 16))
 
-(def last-i
-  (dec (count base-vals)))
+(def init-S
+  (assoc (vec (repeat 250 0)) 0 (mod (h/big-pow 2 (get freq 0)) modular)))
 
-(def all-combo-after 
-  "return number of combinations for base-i and after"
-  (memoize 
-    (fn [i] 
-      (if (> i last-i)
-        1
-        (* (h/big-pow 2 (get freq (get base-vals i))) 
-           (all-combo-after (inc i)))))))
-(doseq [i (reverse (range (inc last-i)))]
-  (all-combo-after i))
-
-(defn combinations [i pow-mod]
-  (if (> i last-i)
-    (if (zero? pow-mod) 1 0)
-    (let [base (get base-vals i)
-          occurance (get freq base)]
-      (loop [j 0
-             combo 0N]
-        (if (> j occurance)
-          combo
-          (let [new-pow-mod (mod (* pow-mod (h/pow-mod base j 250)) 250)
-                coeff (h/C occurance j)
-                ; TODO: group future-combo by new-pow-mod could improve the bruteforce
-                future-combo (if (zero? new-pow-mod)
-                               (* coeff (all-combo-after (inc i)))
-                               (* coeff (combinations (inc i) new-pow-mod)))
-                new-combo (bigint (+ combo future-combo))]
-            (recur (inc j) new-combo)))))))
-
-(println freq)
-(println base-vals)
-(println last-i)
-
-(time
-  (combinations 0 1))
+(dec
+  (loop [i 1
+         S init-S]
+    (println i)
+    (if (> i 249)
+      (first S)
+      (recur (inc i)
+             (loop [j 1
+                    S S]
+               (if (> j (get freq i))
+                 S
+                 (recur (inc j)
+                        (loop [k 0
+                               S0 S]
+                          (if (> k 249)
+                            S0
+                            (recur (inc k)
+                                   (let [sum (mod (+ k i) 250)]
+                                     (assoc S0 sum (mod (+ (get S sum) (get S k)) modular)))))))))))))
