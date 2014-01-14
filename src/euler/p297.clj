@@ -1,6 +1,8 @@
-(ns euler.p2970)
+(ns euler.p2970
+  (:require [euler.helper :as h]))
 
 (def cap (dec (bigint 1E17)))
+#_(def cap (dec (h/big-pow 10 10000)))
 
 (defn fib [a b] (cons a (lazy-seq (fib b (+ b a)))))
 
