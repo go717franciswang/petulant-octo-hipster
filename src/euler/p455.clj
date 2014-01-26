@@ -15,37 +15,65 @@
 
 (def possible-base-cases [6 7 5 3 9])
 
+#_(defn base-case [n digits]
+  (let [modular (int (Math/pow 10 digits))
+        largest-possible (dec modular)]
+    (loop [i largest-possible]
+      (when (> i 0)
+        (if (= i (h/pow-mod n i modular))
+          i
+          (recur (dec i)))))))
+
 (defn base-case [n]
-  (if (= n 1)
-    1
-    (first (filter #(= % (h/pow-mod n % 10)) possible-base-cases))))
+  (let [base (mod n 10)]
+    (condp = base
+      0 nil
+      1 [1]
+      2 [2 4 8 6]
+      3 [3 9 7 1]
+      4 [4 6]
+      5 [5]
+      6 [6]
+      7 [7 9 3 1]
+      8 [8 4 2 6]
+      9 [9 1])))
 
 (defn get-largest [answers]
   (reduce max answers))
 
 (defn f [n]
-  (let [base-case (base-case n)]
+  (let [digits (inc (int (Math/log10 n)))
+        base-case (base-case n)]
     (if (nil? base-case)
       0
-      (loop [digits 2
-             answers [base-case]]
-        (if (= digits 10)
+      (loop [digits 1
+             answers base-case]
+        (if (= digits 9)
           (get-largest answers)
-          (let [m1 (int (Math/pow 10 (dec digits)))
+          (let [m1 (int (Math/pow 10 digits))
                 m2 (* m1 10)
                 new-answers (for [i (range 1 10)
                                   :let [a (* m1 i)]
                                   answer answers
-                                  :let [new-num (+ answer a)
-                                        _ (println n new-num m2)]
+                                  :let [new-num (+ answer a)]
+                                        ;_ (println n new-num m2)]
                                   :when (= new-num (h/pow-mod n new-num m2))]
                               new-num)]
             (if (empty? new-answers)
               (get-largest answers)
               (recur (inc digits) new-answers))))))))
 
-(f 157)
+;(base-case 92)
+;(f 157)
 
-(base-case 157)
-(h/pow-mod 157 157 1000)
+(loop [n 2
+       answer 0N]
+  (if (> n 1000)
+    answer
+    (let [a (f n)]
+      ;(println n a)
+      (recur (inc n) (+ answer a)))))
+
+;(base-case 157)
+;(h/pow-mod 157 157 1000)
 ; looks like for longer digits we need a different test for base case
