@@ -1,7 +1,7 @@
 (ns euler.p456
   (:require [euler.p102 :as e]))
   
-(def cap 600)
+(def cap 8)
 
 (def points
   (let [a (biginteger 32323)
@@ -33,6 +33,42 @@
                 (recur i j (inc k) (inc sum) (inc total))
                 (recur i j (inc k) sum (inc total)))))))
 
-(doseq [i (range 3 100)]
+#_(doseq [i (range 3 100)]
   (let [[sum total] (C i)]
     (println i (get points i) [sum total (float (/ sum total))])))
+
+(def yx
+  (vec (sort
+    (map (fn [[x y]]
+           (/ y x))
+         points))))
+
+(println yx)
+
+(defn count-yx-lt [r]
+  (loop [start 0
+         end (dec cap)]
+    (let [mid (quot (+ end start) 2)
+          a (get yx (dec mid))
+          b (get yx mid)]
+      ;(println [start end mid a b])
+      (cond 
+        (nil? a) 0
+        (= start end) (cond 
+                        (< b r) cap
+                        (<= a r) mid
+                        :else (inc mid))
+        (< b r) (recur (int (inc mid)) end)
+        :else (recur start mid)))))
+          
+(loop [i 0
+       sum 0N]
+  (if (= i cap)
+    (bigint (/ sum 3))
+    (let [[x y] (get points i)
+          r (/ x y)
+          bc (- (count-yx-lt r) (if (< (/ y x) r) 1 0))]
+      (println (str "r: " r ", bc: " bc ", half bc: " (quot bc 2)))
+      (recur (inc i) (bigint (+ sum (* bc (dec bc) 0.5)))))))
+
+(count-yx-lt -4170/5389)
