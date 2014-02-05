@@ -1,9 +1,18 @@
-(ns euler.p381)
+(ns euler.p381
+  (:require [euler.helper :as h]))
 
-(defn factorial [n]
-  (reduce * (range 1 (inc n))))
+(defn factorial [n p]
+  (reduce 
+    (fn [a b]
+      (mod (* a b) p))
+    1N
+    (range 1 (inc n))))
 
 (defn S [p]
-  (mod (reduce + (map factorial (range (- p 5) p))) p))
+  (mod (reduce + (map #(factorial % p) (range (- p 5) p))) p))
 
-(map S (range 5 20))
+(def primes (drop 2 (h/primes3 100)))
+
+(println (map S primes))
+
+(reduce + (map S primes))
