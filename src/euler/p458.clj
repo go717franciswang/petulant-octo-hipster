@@ -6,7 +6,7 @@
 (def modular (long 1E9))
 
 ; going to take a month to finish. haha
-(time
+#_(time
 (loop [d1 7
        d2 0
        d3 0
@@ -26,3 +26,25 @@
           nd5 (long (mod (+ (* d4 3) d5 d6) modular))
           nd6 (long (mod (+ (* d5 2) d6) modular))]
       (recur nd1 nd2 nd3 nd4 nd5 nd6 (inc digits))))))
+
+(loop [d1 7N
+       d2 0N
+       d3 0N
+       d4 0N
+       d5 0N
+       d6 0N
+       d7 0N
+       digits 1
+       previous 0]
+  (println digits d7 (when (not (zero? previous)) (/ d7 previous)))
+  (if (= digits 30)
+    d7
+    (let [nd1 (+ d1 d2 d3 d4 d5 d6)
+          nd2 (+ (* d1 6) d2 d3 d4 d5 d6)
+          nd3 (+ (* d2 5) d3 d4 d5 d6)
+          nd4 (+ (* d3 4) d4 d5 d6)
+          nd5 (+ (* d4 3) d5 d6)
+          nd6 (+ (* d5 2) d6)
+          nd7 (+ (* d7 7) d6)]
+      (recur nd1 nd2 nd3 nd4 nd5 nd6 nd7 (inc digits) d7))))
+
