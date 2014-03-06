@@ -1,9 +1,10 @@
 (ns euler.p461)
 
-; lazy approach: start at given abcd for 200, and pick a change 
-; of either inc or dec 1 of one of abcd so that the error is minimized
+; exhaustive search
+; to increase the speed, create a BST with length = (dmax+1)^2
+; to store f(0)+f(0), f(0)+f(1), ..., f(dmax)+f(dmax)
 
-(def n 10000)
+(def n 200)
 
 (defn f [k]
   (dec (Math/exp (/ k n))))
@@ -11,7 +12,23 @@
 (defn error [[a b c d]]
   (Math/abs (- (+ (f a) (f b) (f c) (f d)) Math/PI)))
 
-(loop [args [(* 6 50) (* 75 50) (* 89 50) (* 226 50)]
+(def dmax (int (* (Math/log (inc (- Math/PI (* (f 1) 3)))) n)))
+
+(def cache (new java.util.TreeMap))
+(doseq [i (range (inc dmax))
+        j (range (inc dmax))]
+  (.put cache (java.lang.Double. (+ (f i) (f j))) [i j]))
+
+
+
+
+
+
+
+
+
+
+#_(loop [args [(* 6 50) (* 75 50) (* 89 50) (* 226 50)]
        best (error args)]
   (println args)
   (let [[new-args new-best] (reduce (fn [[new-args new-best] [i o]]
